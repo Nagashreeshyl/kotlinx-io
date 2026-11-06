@@ -96,7 +96,7 @@ private class SourceNSInputStream(
 
     override fun getBuffer(buffer: CPointer<CPointerVar<uint8_tVar>>?, length: CPointer<NSUIntegerVar>?) = false
 
-    override fun hasBytesAvailable() = !isFinished
+    override fun hasBytesAvailable() = !isFinished && streamStatus != NSStreamStatusAtEnd
 
     private val isFinished
         get() = when (streamStatus) {

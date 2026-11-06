@@ -131,6 +131,37 @@ class SourceNSInputStreamTest {
     }
 
     @Test
+    fun testHasBytesAvailableAfterEofOnEmptySource() {
+        val input = Buffer().asNSInputStream()
+        input.open()
+        val byteArray = ByteArray(1)
+        byteArray.usePinned {
+            val cPtr = it.addressOf(0).reinterpret<uint8_tVar>()
+            assertEquals(0, input.read(cPtr, 1U))
+        }
+        assertEquals(NSStreamStatusAtEnd, input.streamStatus)
+        assertFalse(input.hasBytesAvailable())
+        input.close()
+    }
+
+    @Test
+    fun testHasBytesAvailableAfterEofOnFullyReadSource() {
+        val input = Buffer().apply { writeString("abc") }.asNSInputStream()
+        input.open()
+        assertTrue(input.hasBytesAvailable())
+        val byteArray = ByteArray(4)
+        byteArray.usePinned {
+            val cPtr = it.addressOf(0).reinterpret<uint8_tVar>()
+            assertEquals(3, input.read(cPtr, 4U))
+            assertTrue(input.hasBytesAvailable())
+            assertEquals(0, input.read(cPtr, 4U))
+        }
+        assertEquals(NSStreamStatusAtEnd, input.streamStatus)
+        assertFalse(input.hasBytesAvailable())
+        input.close()
+    }
+
+    @Test
     fun delegateTest() {
         val runLoop = startRunLoop()
 
